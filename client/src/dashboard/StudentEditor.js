@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import {
     Table,
     Button,
@@ -11,60 +11,84 @@ import {
     Row,
     Input,
 } from 'antd';
-import DatePicker from "react-datepicker";
+import { GenderEnum } from '../Enum/GenderEnum';
+import { GradeEnumList } from '../Enum/GradeEnum';
+import { GetSectionByGrade } from '../Enum/SectionEnum';
+import StudentDM from '../DataModel/StudentDM';
+import { StudentService } from '../service/StudentService';
+import { isFunction } from '../utility/ToolFtc';
 
 const { Option } = Select;
 
-function StudentEditor() {
+function StudentEditor(props) {
+    const [sections, setSection] = useState([]);
+    const [studentData, setStudentData] = useState(new StudentDM());
+    const formRef = useRef(null);
+    const onFormLayoutChange = (val) => {
+        var data = studentData;
+        var keyNames = Object.keys(val);
+        data[keyNames[0]] = val[keyNames[0]];
+        if (keyNames[0] === "grade") {
+            setSection(GetSectionByGrade(val.grade));
+            data.section = "";
+        }
+        setStudentData(data)
+    };
+    const onSave = () => {
+        // console.log(studentData)
+        StudentService.registerNewStudent(studentData)
+            .then(res => {
+                if (isFunction(props.afterSave))
+                    props.afterSave()
+            })
+    }
     return (
-        <Form layout="vertical" hideRequiredMark>
+        <Form layout="vertical"
+            initialValues={studentData}
+            hideRequiredMark
+            onValuesChange={onFormLayoutChange}
+            ref={formRef}
+            onFinish={() => onSave()}
+        >
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item
-                        name="name"
-                        label="Name"
-                        rules={[{ required: true, message: 'Please enter user name' }]}
+                        name="firstName"
+                        label="First Name"
+                        rules={[{ required: true, message: 'Please enter first name' }]}
                     >
-                        <Input placeholder="Please enter user name" />
+                        <Input placeholder="Please enter user first name" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
                     <Form.Item
-                        name="url"
-                        label="Url"
-                        rules={[{ required: true, message: 'Please enter url' }]}
+                        name="lastName"
+                        label="Last Name"
+                        rules={[{ required: true, message: 'Please enter last name' }]}
                     >
-                        <Input
-                            style={{ width: '100%' }}
-                            addonBefore="http://"
-                            addonAfter=".com"
-                            placeholder="Please enter url"
-                        />
+                        <Input placeholder="Please enter user last name" />
                     </Form.Item>
                 </Col>
             </Row>
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item
-                        name="owner"
-                        label="Owner"
-                        rules={[{ required: true, message: 'Please select an owner' }]}
+                        name="middleName"
+                        label="Middle Name"
+                        rules={[{ required: true, message: 'Please enter middle name' }]}
                     >
-                        <Select placeholder="Please select an owner">
-                            <Option value="xiao">Xiaoxiao Fu</Option>
-                            <Option value="mao">Maomao Zhou</Option>
-                        </Select>
+                        <Input placeholder="Please enter user middle name" />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
                     <Form.Item
-                        name="type"
-                        label="Type"
-                        rules={[{ required: true, message: 'Please choose the type' }]}
+                        name="gender"
+                        label="Gender"
+                        rules={[{ required: true, message: 'Please choose gender' }]}
                     >
-                        <Select placeholder="Please choose the type">
-                            <Option value="private">Private</Option>
-                            <Option value="public">Public</Option>
+                        <Select placeholder="Please choose the gender">
+                            <Option value={GenderEnum.male}>Male</Option>
+                            <Option value={GenderEnum.female}>Female</Option>
                         </Select>
                     </Form.Item>
                 </Col>
@@ -72,41 +96,62 @@ function StudentEditor() {
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item
-                        name="approver"
-                        label="Approver"
-                        rules={[{ required: true, message: 'Please choose the approver' }]}
+                        name="grade"
+                        label="Grade"
+                        rules={[{ required: true, message: 'Please choose a grade' }]}
                     >
-                        <Select placeholder="Please choose the approver">
-                            <Option value="jack">Jack Ma</Option>
-                            <Option value="tom">Tom Liu</Option>
+                        <Select placeholder="Please choose a grade">
+                            {
+                                GradeEnumList.map((val, key) => {
+                                    return <Select.Option value={val.v} key={key}>{val.t}</Select.Option>;
+                                })
+                            }
                         </Select>
                     </Form.Item>
                 </Col>
                 <Col span={12}>
                     <Form.Item
-                        name="dateTime"
-                        label="DateTime"
-                        rules={[{ required: true, message: 'Please choose the dateTime' }]}
+                        name="section"
+                        label="Section"
+                        rules={[{ required: true, message: 'Please choose a section' }]}
                     >
-                        <DatePicker
-                            style={{ width: '100%' }}
-                        />
+                        <Select placeholder="Please choose a section">
+                            {
+                                sections.map((val, key) => {
+                                    return <Select.Option value={val.v} key={key}>{val.t}</Select.Option>;
+                                })
+                            }
+                        </Select>
+                    </Form.Item>
+                </Col>
+
+            </Row>
+            <Row gutter={16}>
+                <Col span={24}>
+                    <Form.Item
+                        name="lrn"
+                        label="LRN"
+                        rules={[{ required: true, message: 'Please enter LRN' }]}
+                    >
+                        <Input placeholder="Please enter LRN" />
                     </Form.Item>
                 </Col>
             </Row>
             <Row gutter={16}>
                 <Col span={24}>
                     <Form.Item
-                        name="description"
-                        label="Description"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'please enter url description',
-                            },
-                        ]}
+                        name="qrId"
+                        label="QR ID"
+                        rules={[{ required: true, message: 'Please enter QR ID' }]}
                     >
-                        <Input.TextArea rows={4} placeholder="please enter url description" />
+                        <Input placeholder="Please enter QR ID" />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={24}>
+                    <Form.Item>
+                        <Button type='primary' htmlType='submit'>Create</Button>
                     </Form.Item>
                 </Col>
             </Row>
@@ -114,4 +159,4 @@ function StudentEditor() {
     )
 }
 
-export default StudentEditor
+export default StudentEditor;

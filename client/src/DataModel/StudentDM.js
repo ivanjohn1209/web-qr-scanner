@@ -1,15 +1,15 @@
 
 
 export default class StudentDM {
-    constructor(){
+    constructor() {
 
     }
     ref_student = "";
-    qrId= ""
+    qrId = ""
     firstName = "";
     lastName = "";
     middleName = "";
-    grade = 0;
+    grade = "";
     section = "";
     gender = "";
     lrn = "";

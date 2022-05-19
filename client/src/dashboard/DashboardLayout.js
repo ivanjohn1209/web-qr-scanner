@@ -10,25 +10,24 @@ import {
   SettingOutlined
 } from '@ant-design/icons';
 import GradeTable from './GradeTable';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GradeEnum, GradeEnumList } from '../Enum/GradeEnum';
 import { IsEmpty, IsObjEmpty } from '../utility/ToolFtc';
 import UserContext from '../contexts/UserContext';
-
+const { SubMenu } = Menu;
 const { Header, Sider, Content } = Layout;
 function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false)
-  const [selectedMenu, setMenu] = useState('0');
   const userContext = useContext(UserContext);
   const [grade, setgrade] = useState(GradeEnum.seven)
   const navigate = useNavigate();
-  const { gradeLevel } = useParams();
   useEffect(() => {
-    var gradeKey = IsEmpty(gradeLevel) ? 0 : GradeEnumList.findIndex(e => e.path === gradeLevel)
-    var grade = GradeEnumList[gradeKey]
-    setgrade(grade.v)
-    setMenu(gradeKey.toString())
-  }, [gradeLevel, userContext.user])
+    // if (!IsEmpty(gradeLevel)) {
+    //   var gradeKey = GradeEnumList.findIndex(e => e.path === gradeLevel)
+    //   var grade = GradeEnumList[gradeKey]
+    //   setgrade(grade.v)
+    // }
+  }, [])
 
   const onLogout = () => {
     userContext.removeLoginData();
@@ -39,17 +38,20 @@ function DashboardLayout() {
   return (
     <React.Fragment>
       <Layout>
-        <Sider trigger={null} collapsible collapsed={collapsed} theme="light">
+        <Sider trigger={null} collapsible collapsed={collapsed} breakpoint={"lg"}
+          collapsedWidth={0} theme="light">
           <div className="logo" ><span>Attendance Checker</span></div>
-          <Menu theme="light" mode="inline" selectedKeys={selectedMenu}>
-            {
-              GradeEnumList.map((val, key) => {
-                return <Menu.Item key={key} icon={<UserOutlined />} onClick={() => { navigateTab(val) }}>
-                  {val.t}
-                </Menu.Item>
-              })
-            }
-            <Menu.Item icon={<SettingOutlined />} >
+          <Menu theme="light" mode="inline">
+            <SubMenu key="sub1" icon={<UserOutlined />} title="Grade Level">
+              {
+                GradeEnumList.map((val, key) => {
+                  return <Menu.Item key={key} icon={<UserOutlined />} onClick={() => { navigateTab(val) }}>
+                    {val.t}
+                  </Menu.Item>
+                })
+              }
+            </SubMenu>
+            <Menu.Item icon={<SettingOutlined />} onClick={() => { navigate("/dashboard/settings") }}>
               Settings
             </Menu.Item>
           </Menu>
@@ -67,7 +69,8 @@ function DashboardLayout() {
               minHeight: 280,
             }}
           >
-            <GradeTable grade={grade} />
+            <Outlet />
+            {/* <GradeTable grade={grade} /> */}
           </Content>
         </Layout>
       </Layout >

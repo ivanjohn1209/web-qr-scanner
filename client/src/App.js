@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { QrReader } from 'react-qr-reader';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import FullScreenLoader from './components/FullScreenLoader';
 import Login from './auth/Login';
 import { notification } from 'antd';
@@ -11,16 +11,21 @@ import { keys, LocalStorageUtility } from './utility/LocalStorageUtility';
 import UserContext from './contexts/UserContext';
 import { IsEmpty } from './utility/ToolFtc';
 import PrivateRoute from './utility/PrivateRoute';
+import AccountList from './dashboard/AccountList';
 const QrScanner = lazy(() => import('./home/QrScanner'));
 const RegisterStudent = lazy(() => import('./auth/RegisterStudent'));
 const DashboardLayout = lazy(() => import('./dashboard/DashboardLayout'));
+const GradeTable = lazy(() => import('./dashboard/GradeTable'));
+const Settings = lazy(() => import('./dashboard/Settings'));
+const NotFoundPage = lazy(() => import('./components/NotFoundPage'));
+
 // const Context = React.createContext({ name: 'Default' });
 function App() {
   const [state, setstate] = useState({
     user: {},
     isLoaded: false
   });
-
+  const navigate = useNavigate()
   useEffect(() => {
     getUserSession();
   }, []);
@@ -44,6 +49,7 @@ function App() {
     });
   };
   const removeLoginData = () => {
+    navigate("/login")
     setstate({
       ...state,
       user: {},
@@ -67,8 +73,15 @@ function App() {
             <Route path="/" element={<QrScanner />} />
             <Route path="/register-student" element={<RegisterStudent />} />
             <Route path="/login" element={<Login />} />
-            <Route path={"/dashboard/:gradeLevel"} element={<PrivateRoute><DashboardLayout /></PrivateRoute>} />
-            <Route path="/dashboard" element={<PrivateRoute><DashboardLayout /></PrivateRoute>} />
+            {/* <Route path={"/dashboard/:gradeLevel"} element={<PrivateRoute><DashboardLayout /></PrivateRoute>} /> */}
+            <Route path="/dashboard" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+              <Route path='settings' element={<Settings />} />
+              <Route path='accountlist' element={<AccountList />} />
+              <Route path=':gradeLevel' element={<GradeTable />} />
+              <Route path="not-found" element={<NotFoundPage />} />
+            </Route>
+            {/* <Route path="/settings" element={<PrivateRoute><DashboardLayout /></PrivateRoute>} /> */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </UserContext.Provider>

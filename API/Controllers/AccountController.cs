@@ -72,7 +72,6 @@ namespace API.Controllers
         }
 
 
-
         [HttpPost("sessioninfo")]
         public async Task<ActionResult<UserDto>> SessionInfo(SessionDto sessionDto)
         {

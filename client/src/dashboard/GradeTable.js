@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Table,
   Button,
@@ -15,28 +15,45 @@ import { } from "moment"
 import { StudentService } from '../service/StudentService';
 import { SectionEnumList } from '../Enum/SectionEnum';
 import DatePicker from "react-datepicker";
-import { IsArrEmpty } from '../utility/ToolFtc';
+import { IsArrEmpty, IsEmpty } from '../utility/ToolFtc';
 import {
   PlusOutlined
 } from '@ant-design/icons';
 import StudentEditor from './StudentEditor';
+import { GradeEnum, GradeEnumList } from '../Enum/GradeEnum';
+import { useNavigate, useParams } from 'react-router-dom';
 const { Option } = Select;
 
 function GradeTable(props) {
-  const { grade } = props;
   const [list, setList] = useState([]);
   const [sectionList, setSectionList] = useState([]);
   const [date, setDate] = useState(new Date());
+  const [grade, setgrade] = useState(GradeEnum.seven)
   const [section, setSection] = useState('');
   const [loading, setloading] = useState(false)
   const [formShow, setformShow] = useState(false)
+  const { gradeLevel } = useParams();
+  const navigate = useNavigate();
   useEffect(() => {
-    var secList = SectionEnumList.filter(e => e.grade === grade);
-    setSectionList(secList)
-    setSection(secList[0].v)
-    getList()
-  }, [grade, date, section])
+    if (!IsEmpty(gradeLevel)) {
+      let gradeKey = GradeEnumList.findIndex(e => e.path === gradeLevel)
+      if (gradeKey !== -1) {
+        let grade = GradeEnumList[gradeKey]
+        setgrade(grade.v)
+      } else {
+        navigate("/dashboard/not-found");
+      }
+    }
+  }, [gradeLevel])
 
+  useEffect(() => {
+    let secList = SectionEnumList.filter(e => e.grade === grade);
+    if (!IsArrEmpty(secList)) {
+      setSectionList(secList)
+      setSection(secList[0].v)
+      getList()
+    }
+  }, [grade, date, section])
   const getList = () => {
     setloading(true)
     let data = {
@@ -64,11 +81,15 @@ function GradeTable(props) {
   const dateChange = (date) => {
     console.log(date)
   }
+  const afterSave = () => {
+    setformShow(false);
+    getList()
+  }
   return (
     <React.Fragment>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
         <h3 style={{ marginRight: 5, marginBottom: 0 }}>Students</h3>
-        <Button icon={<PlusOutlined />} onClick={() => setformShow(true)} type="primary">Add </Button>
+        <Button icon={<PlusOutlined />} onClick={() => setformShow(true)} type="primary">Add</Button>
       </div>
       <div className='toolbar'>
         <div>
@@ -118,16 +139,14 @@ function GradeTable(props) {
         width={720}
         visible={formShow}
         bodyStyle={{ paddingBottom: 80 }}
+        onClose={() => setformShow(false)}
         extra={
           <Space>
             <Button onClick={() => setformShow(false)}>Cancel</Button>
-            <Button onClick={() => setformShow(false)} type="primary">
-              Submit
-            </Button>
           </Space>
         }
       >
-        <StudentEditor />
+        <StudentEditor afterSave={afterSave} />
       </Drawer>
     </React.Fragment>
   )
