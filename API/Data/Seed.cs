@@ -21,13 +21,9 @@ namespace API.Data
 
             foreach (var user in users)
             {
-                using var hmac = new HMACSHA512();
-
                 user.UserName = user.UserName;
-                user.PasswordSalt = hmac.Key;
-                user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("admin123"));
+                user.Password = "admin123";
                 user.Role = user.Role;
-
                 await context.Users.AddAsync(user);
             }
 

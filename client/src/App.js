@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { QrReader } from 'react-qr-reader';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import FullScreenLoader from './components/FullScreenLoader';
 import Login from './auth/Login';
 import { notification } from 'antd';
@@ -42,6 +42,14 @@ function App() {
   const setLoginData = (userDM) => {
     window.user = userDM;
     window.userRef = userDM.id;
+
+    console.log(userDM)
+    if (userDM.role !== "scanner" && window.location.pathname === "/")
+      navigate("/dashboard/grade7")
+    else if (window.location.pathname === "/")
+      navigate("/scan")
+
+
     setstate({
       ...state,
       user: userDM,
@@ -70,17 +78,15 @@ function App() {
       <UserContext.Provider value={user}>
         <Suspense fallback={<FullScreenLoader />}>
           <Routes>
-            <Route path="/" element={<QrScanner />} />
-            <Route path="/register-student" element={<RegisterStudent />} />
+            <Route path="/scan" element={<PrivateRoute><QrScanner /></PrivateRoute>} />
+            {/* <Route path="/register-student" element={<RegisterStudent />} /> */}
             <Route path="/login" element={<Login />} />
-            {/* <Route path={"/dashboard/:gradeLevel"} element={<PrivateRoute><DashboardLayout /></PrivateRoute>} /> */}
             <Route path="/dashboard" element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
               <Route path='settings' element={<Settings />} />
               <Route path='accountlist' element={<AccountList />} />
               <Route path=':gradeLevel' element={<GradeTable />} />
               <Route path="not-found" element={<NotFoundPage />} />
             </Route>
-            {/* <Route path="/settings" element={<PrivateRoute><DashboardLayout /></PrivateRoute>} /> */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>

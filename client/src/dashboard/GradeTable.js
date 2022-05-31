@@ -17,7 +17,9 @@ import { SectionEnumList } from '../Enum/SectionEnum';
 import DatePicker from "react-datepicker";
 import { IsArrEmpty, IsEmpty } from '../utility/ToolFtc';
 import {
-  PlusOutlined
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 import StudentEditor from './StudentEditor';
 import { GradeEnum, GradeEnumList } from '../Enum/GradeEnum';
@@ -53,7 +55,11 @@ function GradeTable(props) {
       setSection(secList[0].v)
       getList()
     }
-  }, [grade, date, section])
+  }, [grade])
+
+  useEffect(() => {
+    getList()
+  }, [section, date])
   const getList = () => {
     setloading(true)
     let data = {
@@ -114,6 +120,7 @@ function GradeTable(props) {
               <th>First Name</th>
               <th>Middle Name</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody className='ant-table-tbody'>
@@ -127,6 +134,10 @@ function GradeTable(props) {
                       <td>{val.firstName}</td>
                       <td>{val.middleName}</td>
                       <td>{val.present ? "Present" : "Absent"}</td>
+                      <td>
+                        <Button icon={<EditOutlined />} onClick={() => setformShow(true)} type="info"></Button>
+                        <Button icon={<DeleteOutlined />} onClick={() => setformShow(true)} style={{ marginLeft: 5 }} type="danger"></Button >
+                      </td>
                     </tr>
                   )
                 })

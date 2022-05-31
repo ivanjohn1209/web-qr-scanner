@@ -3,7 +3,8 @@ import { HttpRequestUtility } from "../utility/HttpRequestUtility"
 import StudentDM from "../DataModel/StudentDM";
 export const StudentService = {
     registerNewStudent,
-    listStudent
+    listStudent,
+    checkStudentQR
 }
 
 /**
@@ -40,6 +41,21 @@ async function listStudent(data) {
     }
 
     return HttpRequestUtility.postJson(api + "students/list", param)
+        .then(res => {
+            return res
+        })
+}
+
+/**
+ * List Student
+ * @param {any} data 
+ */
+async function checkStudentQR(qrId) {
+    var param = {
+        qrId: qrId,
+    }
+
+    return HttpRequestUtility.postJson(api + "qrscanner/check-qr", param)
         .then(res => {
             return res
         })

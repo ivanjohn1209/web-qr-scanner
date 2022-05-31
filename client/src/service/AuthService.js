@@ -24,7 +24,6 @@ async function Login(username, password) {
         })
 }
 
-
 async function getSessionInfo() {
     var param = {
     }

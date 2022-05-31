@@ -15,6 +15,7 @@ namespace API.Data
         }
         public IAttendanceRepository AttendanceRepository => new AttendanceRepository(_context, _mapper);
         public IStudentsRepository StudentsRepository => new StudentsRepository(_context, _mapper);
+        public IUserRepository UserRepository => new UserRepository(_context, _mapper);
 
 
         public async Task<bool> Complete()

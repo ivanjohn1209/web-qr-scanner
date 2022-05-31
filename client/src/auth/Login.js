@@ -11,7 +11,10 @@ function Login() {
         AuthService.Login(values.username, values.password)
             .then(res => {
                 userContext.setLoginData(res);
-                navigate("/dashboard")
+                if (res.role !== "scanner")
+                    navigate("/dashboard/grade7")
+                else
+                    navigate("/scan")
             })
             .catch(ex => {
                 notification.error({

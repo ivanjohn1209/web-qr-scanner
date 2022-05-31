@@ -5,6 +5,7 @@ using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,23 +18,29 @@ namespace API.Controllers
     {
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
-        public AccountController(DataContext context, ITokenService tokenService)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public AccountController(DataContext context, ITokenService tokenService, IUnitOfWork unitOfWork)
         {
             _tokenService = tokenService;
             _context = context;
+            _unitOfWork = unitOfWork;
         }
+
+        [Authorize]
         [HttpPost("createuser")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
-
             using var hmac = new HMACSHA512();
+            var userFind = _context.Users.Where(x => x.UserName == registerDto.Username).FirstOrDefault();
+            if (userFind != null)
+                return BadRequest("Username is taken");
 
             var user = new AppUser
             {
-                UserName = registerDto.Username.ToLower(),
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-                PasswordSalt = hmac.Key,
-                Role="member"
+                UserName = registerDto.Username,
+                Password = registerDto.Password,
+                Role=registerDto.Role
             };
 
             _context.Users.Add(user);
@@ -42,10 +49,19 @@ namespace API.Controllers
             return new UserDto
             {
                 Username = user.UserName,
-                Token = _tokenService.CreateToken(user)
+                Role = user.Role
             };
         }
 
+        [Authorize]
+        [HttpPost("list")]
+        public async Task<ActionResult<IEnumerable<AppUser>>> GetAccountList()
+        {
+            var userID = User.GetUserId();
+            var users = await _unitOfWork.UserRepository.GetUsersAsync();
+           var listUsers = users.Where((e) => e.Id != userID);
+            return Ok(listUsers);
+        }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
@@ -54,14 +70,7 @@ namespace API.Controllers
 
             if (user == null) return Unauthorized("Invalid username");
 
-            using var hmac = new HMACSHA512(user.PasswordSalt);
-
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
-
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid password");
-            }
+            if (loginDto.Password != user.Password) return Unauthorized("Invalid password");
 
             return new UserDto
             {

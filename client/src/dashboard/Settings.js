@@ -19,12 +19,6 @@ function Settings() {
             name: "Account Settings",
             child: [
                 {
-                    name: "Account Profile",
-                    icon: <UserOutlined />,
-                    path: "/dashboard/profile",
-                    desc: "To manage the your account, edit, updates credentials"
-                },
-                {
                     name: "Account List",
                     icon: <SolutionOutlined />,
                     path: "/dashboard/accountlist",
